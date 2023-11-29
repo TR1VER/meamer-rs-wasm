@@ -7,6 +7,9 @@ use rml_interpreter::extractors::io::parse_file;
 use plangenerator::error::PlanError;
 use translator::rmlalgebra::translate_to_algebra;
 use walkdir::{DirEntry, WalkDir};
+use wasm_bindgen::prelude::*;
+
+
 
 fn is_rml_file(entry: &DirEntry) -> bool {
     entry.file_type().is_file()
@@ -108,4 +111,18 @@ fn translate_rml_file<F: AsRef<str>, O: AsRef<str>>(
         pretty_path.yellow()
     );
     Ok(())
+}
+
+#[wasm_bindgen]
+pub fn translate_rml_file_string(file: String, output_prefix: String) -> Result<(), JsValue> {
+    let result = translate_rml_file::<&str, &str>(&file, &output_prefix);
+
+    match result {
+        Ok(_) => Ok(()),
+        Err(e) => {
+            // Convert the Rust error into a JavaScript error.
+            // This assumes e can be formatted into a string.
+            Err(JsValue::from_str(&format!("Error: {}", e)))
+        }
+    }
 }
